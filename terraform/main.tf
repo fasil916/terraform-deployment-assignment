@@ -5,7 +5,7 @@ module "aks_cluster" {
   resource_group_name = "my-aks-rg"
   dns_prefix          = "my-aks-cluster"
   node_count          = 1 
-  vm_size             = "Standard_DS2_v2"
+  vm_size             = "Standard_DS3_v2"
   os_disk_size_gb     = 40
   tags = {
     environment = "staging"
