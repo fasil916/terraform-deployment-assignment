@@ -77,7 +77,7 @@ pipeline {
                 script {
                     dir('terraform') {
                    
-                    sh 'terraform destroy -auto-approve tfplan'
+                    sh 'terraform apply -auto-approve tfplan'
                 }
             }
         }
