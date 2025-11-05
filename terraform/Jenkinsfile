@@ -2,31 +2,34 @@ pipeline {
     agent any
 
     environment {
-        // Azure authentication variables
-        AZURE_CLIENT_ID = credentials('azure-client-id')   
-        AZURE_CLIENT_SECRET = credentials('azure-client-secret') 
-        AZURE_TENANT_ID = credentials('azure-tenant-id')   
-        AZURE_SUBSCRIPTION_ID = credentials('azure-subscription-id')
+        
+        ARM_CLIENT_ID = credentials('azure-client-id')   
+        ARM_CLIENT_SECRET = credentials('azure-client-secret') 
+        ARM_TENANT_ID = credentials('azure-tenant-id')   
+        ARM_SUBSCRIPTION_ID = credentials('azure-subscription-id')
 
           }
 
     stages {
         stage('Checkout') {
             steps {
-                // Checkout code from Git repository
+                
+                
+               
                 git branch: 'main', url: 'https://github.com/fasil916/terraform-deployment-assignment.git'
             }
         }
 
-       stage('Terraform Code Scan') {
+      stage('Terraform Code Scan') {
             steps {
                 script {
                     echo "Running Terraform code scan using Checkov..."
-                    
-                    // Generate the Checkov security check report in JSON format
+                   
+                   dir('terraform') {
                     sh '''
                         checkov -d . --output json > checkov-report.json || echo "Checkov scan completed with issues, but continuing the pipeline."
                     '''
+                   }
                 }
                 }
             }
@@ -35,11 +38,12 @@ pipeline {
         stage('Azure Authentication') {
             steps {
                 script {
-                    // Login to Azure using Service Principal
+               
                     sh '''
-                        az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
-                        az account set --subscription $AZURE_SUBSCRIPTION_ID
+                        az login --service-principal -u ${ARM_CLIENT_ID} -p ${ARM_CLIENT_SECRET} --tenant ${ARM_TENANT_ID}
+                        az account set --subscription ${ARM_SUBSCRIPTION_ID}
                     '''
+                
                 }
             }
         }
@@ -47,8 +51,10 @@ pipeline {
         stage('Terraform Init') {
             steps {
                 script {
-                    // Initialize Terraform and configure backend
+                     dir('terraform') {
+                    
                     sh 'terraform init'
+                     }
                 }
             }
         }
@@ -56,25 +62,31 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 script {
-                    // Run terraform plan to check changes
+                    
+                     dir('terraform') {
+                   
                     sh 'terraform plan -out=tfplan'
+                     }
                 }
             }
         }
 
         stage('Terraform Apply') {
+            
             steps {
                 script {
-                    // Apply the Terraform plan to deploy infrastructure
+                    dir('terraform') {
+                   
                     sh 'terraform apply -auto-approve tfplan'
                 }
             }
+        }
         }
 
         stage('Post-Deployment') {
             steps {
                 script {
-                    // Optional: Additional post-deployment steps (tests, notifications, etc.)
+                  
                     echo "Terraform deployment complete!"
                 }
             }
@@ -92,5 +104,5 @@ pipeline {
         failure {
             echo 'Azure Terraform deployment failed!'
         }
-    }
+     }
 }
