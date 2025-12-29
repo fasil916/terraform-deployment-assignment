@@ -1,6 +1,7 @@
 
 
-
+variables:
+- group: myvariable-group
 
 trigger:
 - main
