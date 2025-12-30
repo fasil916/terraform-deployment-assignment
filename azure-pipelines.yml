@@ -1,7 +1,3 @@
-
-
-
-
 trigger:
 - main
 
@@ -16,6 +12,10 @@ stages:
         pool:
           vmImage: 'ubuntu-latest'
         steps:
+
+          # This ensures your code is fetched
+          - checkout: self
+
           - task: Maven@4
             inputs:
               mavenPomFile: 'pom.xml'
@@ -26,4 +26,3 @@ stages:
               mavenAuthenticateFeed: false
               effectivePomSkip: false
               sonarQubeRunAnalysis: false
-               
